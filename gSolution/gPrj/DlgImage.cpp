@@ -74,11 +74,11 @@ void CDlgImage::drawData(CDC* pDC)
 {
 	CRect rect;
 	CPen pen;
-	pen.CreatePen(PS_SOLID, 5, COLOR_GREEN);
+	pen.CreatePen(PS_SOLID, 2, COLOR_RED);
 	CPen* pOldPen = pDC->SelectObject(&pen);
 	for (int i = 0; i < m_nDataCount; i++) {
 		rect.SetRect(m_ptData[i], m_ptData[i]);
-		rect.InflateRect(2, 2);
+		rect.InflateRect(1, 1);
 		pDC->Ellipse(rect);
 	}
 	pDC->SelectObject(pOldPen);

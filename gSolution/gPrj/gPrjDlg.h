@@ -37,4 +37,13 @@ public:
 	afx_msg void OnDestroy();
 	void callFunc(int n);
 	afx_msg void OnBnClickedBtnTest();
+	afx_msg void OnBnClickedBtnProcess();
+	afx_msg void OnBnClickedBtnMakePattern();
+	afx_msg void OnBnClickedBtnGetData();
+	afx_msg void OnEnChangeEdit1();
+	double m_dSize;
+	afx_msg void OnBnClickedBtnGetCircleData();
+	void drawCircle(unsigned char * fm, int x, int y, int nRadius, int nGray);
+	BOOL isInCircle(int i, int j, int nCenterX, int nCenterY, int nRadius);
+	void UpdateDisplay();
 };

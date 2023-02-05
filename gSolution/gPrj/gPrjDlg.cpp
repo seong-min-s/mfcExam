@@ -20,12 +20,12 @@ class CAboutDlg : public CDialogEx
 public:
 	CAboutDlg();
 
-// 대화 상자 데이터입니다.
+	// 대화 상자 데이터입니다.
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_ABOUTBOX };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 지원입니다.
 
 // 구현입니다.
@@ -52,6 +52,7 @@ END_MESSAGE_MAP()
 
 CgPrjDlg::CgPrjDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_GPRJ_DIALOG, pParent)
+	, m_dSize(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -59,6 +60,7 @@ CgPrjDlg::CgPrjDlg(CWnd* pParent /*=NULL*/)
 void CgPrjDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_EDIT1, m_dSize);
 }
 
 BEGIN_MESSAGE_MAP(CgPrjDlg, CDialogEx)
@@ -66,6 +68,11 @@ BEGIN_MESSAGE_MAP(CgPrjDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_BTN_TEST, &CgPrjDlg::OnBnClickedBtnTest)
+	ON_BN_CLICKED(IDC_BTN_PROCESS, &CgPrjDlg::OnBnClickedBtnProcess)
+	ON_BN_CLICKED(IDC_BTN_MAKE_PATTERN, &CgPrjDlg::OnBnClickedBtnMakePattern)
+	ON_BN_CLICKED(IDC_BTN_GET_DATA, &CgPrjDlg::OnBnClickedBtnGetData)
+	ON_EN_CHANGE(IDC_EDIT1, &CgPrjDlg::OnEnChangeEdit1)
+	ON_BN_CLICKED(IDC_BTN_GET_CIRCLE_DATA, &CgPrjDlg::OnBnClickedBtnGetCircleData)
 END_MESSAGE_MAP()
 
 
@@ -214,4 +221,142 @@ void CgPrjDlg::OnBnClickedBtnTest()
 	m_pDlgImage->Invalidate();
 	m_pDlgImgResult->Invalidate();
 
+}
+#include "Process.h"
+#include <chrono>
+void CgPrjDlg::OnBnClickedBtnProcess()
+{
+	CProcess process;
+
+	auto start = std::chrono::system_clock::now();
+	int nRet = process.getStarInfo(&m_pDlgImage->m_image);
+	auto end = std::chrono::system_clock::now();
+
+	auto millisec = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	cout << nRet << "\t" << millisec.count() << "ms " << endl;
+}
+
+
+void CgPrjDlg::OnBnClickedBtnMakePattern()
+{
+	unsigned char* fm = (unsigned char*)m_pDlgImage->m_image.GetBits();
+	int nWidth = m_pDlgImage->m_image.GetWidth();
+	int nHeight = m_pDlgImage->m_image.GetHeight();
+	int nPitch = m_pDlgImage->m_image.GetPitch();
+	memset(fm, 0, nWidth*nHeight);
+
+
+	CRect rect(100, 100, 200, 200);
+
+	for (int j = rect.top; j < rect.bottom; ++j) {
+		for (int i = rect.left; i < rect.right; ++i) {
+			fm[j*nPitch + i] = rand() % 0xff;
+		}
+	}
+	m_pDlgImage->Invalidate();
+
+}
+
+
+void CgPrjDlg::OnBnClickedBtnGetData()
+{
+	unsigned char* fm = (unsigned char*)m_pDlgImage->m_image.GetBits();
+	int nWidth = m_pDlgImage->m_image.GetWidth();
+	int nHeight = m_pDlgImage->m_image.GetHeight();
+	int nPitch = m_pDlgImage->m_image.GetPitch();
+
+	INT nTh = 0x80;
+
+	int nSumX = 0;
+	int nSumY = 0;
+	int nCount = 0;
+	CRect rect(0, 0, nWidth, nHeight);
+	for (int j = rect.top; j < rect.bottom; ++j) {
+		for (int i = rect.left; i < rect.right; ++i) {
+			if (fm[j*nPitch + i] > nTh) {
+				cout << j << "," << i << endl;
+				nSumX += i;
+				nSumY += j;
+				nCount++;
+			}
+		}
+
+	}
+
+	double dCenterX = (double)nSumX / nCount;
+	double dCenterY = (double)nSumY / nCount;
+
+	cout << dCenterX << "\t" << dCenterY << endl;
+}
+
+
+void CgPrjDlg::OnEnChangeEdit1()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+}
+
+
+#include<cstdlib>
+#include<ctime>
+#include<cmath>
+void CgPrjDlg::OnBnClickedBtnGetCircleData()
+{
+	const double PI = 3.14;
+	int nWidth = m_pDlgImage->m_image.GetWidth();
+	int nHeight = m_pDlgImage->m_image.GetHeight();
+	int nPitch = m_pDlgImage->m_image.GetPitch();
+	UpdateData(TRUE);
+	double nRadius = sqrt(m_dSize / PI);
+	int nGray = 80;
+	srand((unsigned int)time(NULL));
+
+	int x = rand() % nWidth;
+	int y = rand() % nHeight;
+
+	unsigned char* fm = (unsigned char*)m_pDlgImage->m_image.GetBits();
+	cout << nWidth << "," << nHeight << "\tRadius : " << nRadius << endl;
+	cout << "center X pos is " << x + nRadius << "center Y pos is " << y + nRadius << endl;
+	memset(fm, 0xff, nWidth*nHeight);
+
+	drawCircle(fm, x, y, nRadius, nGray);
+	UpdateDisplay();
+}
+BOOL CgPrjDlg::isInCircle(int i, int j, int nCenterX, int nCenterY, int nRadius)
+{
+	bool bRet = false;
+
+	double dX = i - nCenterX;
+	double dY = j - nCenterY;
+
+	double dDist = dX * dX + dY * dY;
+
+	if (dDist < nRadius*nRadius && i >= nRadius && i + nRadius < 640 && j >= nRadius && j + nRadius < 480) {
+		bRet = true;
+	}
+
+	return bRet;
+}
+void CgPrjDlg::drawCircle(unsigned char * fm, int x, int y, int nRadius, int nGray)
+{
+	int nCenterX = x + nRadius;
+	int nCenterY = y + nRadius;
+	int nPitch = m_pDlgImage->m_image.GetPitch();
+
+	for (int j = y; j < y + nRadius * 2; ++j) {
+		for (int i = x; i < x + nRadius * 2; ++i) {
+			if (isInCircle(i, j, nCenterX, nCenterY, nRadius))
+				fm[j*nPitch + i] = nGray;
+		}
+	}
+}
+
+void CgPrjDlg::UpdateDisplay()
+{
+	CClientDC dc(this);
+	m_pDlgImage->m_image.Draw(dc, 0, 0);
 }
