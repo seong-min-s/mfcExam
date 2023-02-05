@@ -1,4 +1,11 @@
 *.VC.*
 X64/
 ipch/
+*obj
+*.pch
+*.log
+Debug/
+
+*.tlog
+*.pdb
 
