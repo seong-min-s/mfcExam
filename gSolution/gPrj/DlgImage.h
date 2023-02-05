@@ -1,6 +1,6 @@
 #pragma once
 
-
+#define MAX_POINT 1000
 // CDlgImage dialog
 
 class CDlgImage : public CDialogEx
@@ -14,7 +14,7 @@ public:
 	CImage m_image;
 	CWnd* m_pParent;
 	int m_nDataCount = 0;
-	CPoint m_ptData[100];
+	CPoint m_ptData[MAX_POINT];
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_DLGIMAGE };
